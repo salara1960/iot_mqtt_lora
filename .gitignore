@@ -6,6 +6,9 @@
 *.ko
 *.obj
 *.elf
+moc_*.cpp
+ui_*.h
+qrc_*.cpp
 
 # Linker output
 *.ilk
@@ -15,12 +18,16 @@
 # Precompiled Headers
 *.gch
 *.pch
+*.old
 
 # Libraries
 *.lib
 *.a
 *.la
 *.lo
+
+# Folders
+build/
 
 # Shared objects (inc. Windows DLLs)
 *.dll
