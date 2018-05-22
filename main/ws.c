@@ -184,7 +184,7 @@ TickType_t tcikl = 0;
 	if (p_buf) {
 	    for (i = 0; i < WS_CLIENT_KEY_L; i++) p_SHA1_Inp[i] = *(p_buf + sizeof(WS_sec_WS_keys) + i);//get Client Key
 	    esp_sha(SHA1, (unsigned char *)p_SHA1_Inp, strlen(p_SHA1_Inp), (unsigned char *)p_SHA1_result);// calculate hash
-	    p_buf = (char*)_base64_encode((unsigned char *)p_SHA1_result, SHA1_RES_L, (size_t *)&i);//hex to base64
+	    p_buf = (char*)base64_encode((unsigned char *)p_SHA1_result, SHA1_RES_L, (size_t *)&i);//hex to base64
 	    p_payload = heap_caps_malloc(sizeof(WS_srv_hs) + i - WS_SPRINTF_ARG_L, MALLOC_CAP_8BIT);//allocate memory for handshake
 	    if (p_payload) {
 		sprintf(p_payload, WS_srv_hs, i - 1, p_buf);//prepare handshake
