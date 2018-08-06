@@ -25,6 +25,7 @@
 #define STACK_SIZE_1K    1024
 #define STACK_SIZE_1K5   1536
 #define STACK_SIZE_2K    2048
+#define STACK_SIZE_2K5   2560
 #define STACK_SIZE_3K    3072
 #define STACK_SIZE_4K    4096
 
@@ -445,8 +446,13 @@ int k, i, val_bin = -1;
 s_radio *dev = NULL;//NULL - unknown device, else addr device in list
 s_led_cmd *lcmd = (s_led_cmd *)lcd;
 
+
+	//char stx[128]; sprintf(stx," st='%s' md5='%s'\n", st, str_md5); print_msg(__func__, NULL, stx, 1);
+	//ESP_LOGI(__func__, " st='%s' md5='%s'\n", st, str_md5);
+
 	cJSON *obj = cJSON_Parse(st);
 	if (obj) {
+	
 	  cJSON *tmp = NULL;
 	  char *val = NULL;
 	  int dev_type = -1;//unknown device
@@ -658,6 +664,7 @@ s_led_cmd *lcmd = (s_led_cmd *)lcd;
 				if (au) if (*au == 0) yes=-1;
 			    break;
 			    case 9://auth
+//				sprintf(stx,"auth: val='%s' md5='%s'\n", val, str_md5); print_msg(__func__, NULL, stx, 1);
 				if ((au) && (str_md5) && (val)) {
 				    if (!strcmp(val, str_md5)) {
 					done = 1; yes = 9;
@@ -1191,15 +1198,19 @@ s_led_cmd *lcmd = (s_led_cmd *)lcd;
 		    if (done) break;
 		}
 	    }
+	  } else {
+//	    ESP_LOGI(__func__, "s_radio *dev == NULL");
 	  }
 	  cJSON_Delete(obj);
+	} else {
+//	    ESP_LOGI(__func__, "obj == NULL");
 	}
 
 	if (yes != -1) { yes = ind_c; yes |= (subc << 16); }
 	last_cmd = ind_c;
 	if (adr_dev) *(uint32_t *)adr_dev = (uint32_t)dev;
 
-//    ESP_LOGI(TAG, "parser_json_str return 0x%x", yes);
+    //ESP_LOGI(TAG, "parser_json_str return 0x%x", yes);
 
     return yes;
 }
@@ -2925,10 +2936,10 @@ wmode = WIFI_MODE_STA; save_param(PARAM_WMODE_NAME, (void *)&wmode, sizeof(uint8
 
     if (fs_ok == ESP_OK) {
 
-	int kols = 10;
+	int kols = 2;
 
 	//***************   make radio file   ******************************************
-	//	kols = make_radio_file(kols);
+	//                  kols = make_radio_file(kols);
 	//******************************************************************************
 
 	char *line = (char *)calloc(1, 128);
@@ -2940,7 +2951,7 @@ wmode = WIFI_MODE_STA; save_param(PARAM_WMODE_NAME, (void *)&wmode, sizeof(uint8
 		if (fradio != NULL) {
 			//int sz = sizeof(s_radio_one);
 			s_radio_one nrec;
-			//s_radio *ukradio=NULL;
+			s_radio *ukradio=NULL;//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 			kols = rdl / size_radio_one;
 			ets_printf("[%s] File %s present, file_size=%d total_radio=%d\n", TAGFAT, radio_fname, rdl, kols);
 			for (int j = 0; j < kols; j++) {
@@ -2948,9 +2959,8 @@ wmode = WIFI_MODE_STA; save_param(PARAM_WMODE_NAME, (void *)&wmode, sizeof(uint8
 				rdl = bin_file_read(fradio, (uint8_t *)&nrec, size_radio_one);
 				if (rdl != size_radio_one) break;
 				else {
-					//ukradio = 
-					add_radio((void *)&nrec);
-/*
+					ukradio = add_radio((void *)&nrec);
+/**/
 					if (ukradio) {
 						memset(line, 0, 128);
 						sprintf(line,"[%p] DevID=%08X", ukradio, nrec.dev_id);
@@ -2962,7 +2972,7 @@ wmode = WIFI_MODE_STA; save_param(PARAM_WMODE_NAME, (void *)&wmode, sizeof(uint8
 									nrec.color.mode);
 						printf("[%u] %s\n", j, line);
 					}
-*/
+/**///!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 				}
 			}
 			close_file(fradio);
@@ -3123,7 +3133,7 @@ wmode = WIFI_MODE_STA; save_param(PARAM_WMODE_NAME, (void *)&wmode, sizeof(uint8
 
 
 
-    if (xTaskCreatePinnedToCore(&radio_task, "radio_task", STACK_SIZE_2K, NULL, 10, NULL, 1) != pdPASS) {//10//6//10//16 //7  core=0
+    if (xTaskCreatePinnedToCore(&radio_task, "radio_task", STACK_SIZE_2K5, NULL, 9, NULL, 1) != pdPASS) {//10//6//10//16 //7  core=0
 	#ifdef SET_ERROR_PRINT
 	    ESP_LOGE(TAGR, "Create radio_task failed | FreeMem %u", xPortGetFreeHeapSize());
 	#endif
@@ -3244,12 +3254,12 @@ wmode = WIFI_MODE_STA; save_param(PARAM_WMODE_NAME, (void *)&wmode, sizeof(uint8
 
 #ifdef SET_WS
 	ws_port = WS_PORT;
-	if (xTaskCreatePinnedToCore(&ws_task, "ws_task", STACK_SIZE_2K, &ws_port, 6, NULL, 1) != pdPASS) {//8//10//7
+	if (xTaskCreatePinnedToCore(&ws_task, "ws_task", STACK_SIZE_2K5, &ws_port, 6, NULL, 1) != pdPASS) {//8//10//7
 	    #ifdef SET_ERROR_PRINT
 		ESP_LOGE(TAGWS, "Create ws_task failed | FreeMem %u", xPortGetFreeHeapSize());
 	    #endif
 	}
-	vTaskDelay(500 / portTICK_RATE_MS);
+	vTaskDelay(1000 / portTICK_RATE_MS);
 #endif
 
     }

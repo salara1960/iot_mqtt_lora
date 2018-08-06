@@ -76,7 +76,7 @@ int ret = 0, len = 0, err = 0, rts, mult;
 uint8_t auth = 0, eot = 0;
 uint32_t timeout = timeout_auth;
 time_t cur_time = 0, wait_time = 0;
-char *buf = NULL, *stx = NULL;
+char *buf = NULL, *stx = NULL, *uk = NULL;
 char ts[64] = {0}, hash_str[256] = {0}, str_tls_port[8] = {0};
 
 s_tls_flags flags = {
@@ -271,9 +271,10 @@ mbedtls_esp_enable_debug_log(&conf, 4);
 	    int rtr = mbedtls_ssl_read(&ssl, (unsigned char *)buf, len);
 	    if (rtr > 0) {
 		wait_time = time(NULL);
+		uk = strstr(buf + 2, "\r\n"); if (uk) *uk = '\0';
 		sprintf(stx,"Recv. data (%d bytes) from client:%s\n", rtr, buf); print_msg(TAGTLS, NULL, stx, 1);
 		eot = 0;
-		rts = mult = parser_json_str(buf, (void *)&data, &auth, hash_str, &eot, NULL);
+		mult = parser_json_str(buf, (void *)&data, &auth, hash_str, &eot, NULL); rts = mult;
 		if (mult != -1) rts &= 0xffff;
 		if (auth) {
 		    //*********************************************************************************************************************

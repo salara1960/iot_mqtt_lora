@@ -5,7 +5,7 @@
 #COMPONENT_ADD_INCLUDEDIRS := include
 COMPONENT_SRCDIRS :=  .
 
-CRTDIR := certs
+CRTDIR := certs/mos
 #TLSDIR := new
 
 ifdef CONFIG_EXAMPLE_EMBEDDED_CERTS

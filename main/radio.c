@@ -265,6 +265,7 @@ void radio_task(void *arg)
 
     if (ms_mode == DEV_MASTER) {
 
+
 #ifdef PRN_SET
 	while ( (rec = get_radio(next)) != NULL ) {
 		memset(line,0,sizeof(line));

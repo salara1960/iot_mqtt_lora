@@ -26,7 +26,7 @@
     #include "mbedtls/md5.h"
 
     #define def_idle_count 60
-    #define timeout_auth 25000
+    #define timeout_auth 30000
     #define timeout_def 10000
 
     #pragma pack(push,1)
