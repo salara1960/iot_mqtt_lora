@@ -2938,9 +2938,11 @@ wmode = WIFI_MODE_STA; save_param(PARAM_WMODE_NAME, (void *)&wmode, sizeof(uint8
 
 	int kols = 2;
 
+
 	//***************   make radio file   ******************************************
 	//                  kols = make_radio_file(kols);
 	//******************************************************************************
+
 
 	char *line = (char *)calloc(1, 128);
 
