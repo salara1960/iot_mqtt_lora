@@ -219,7 +219,7 @@ extern uint32_t tls_client_ip;
 
 extern int make_msg(int *jret, char *buf, uint32_t cli, uint32_t *ind, uint32_t did, void *rad);
 
-extern void print_msg(const char *tag, char *tpc, char *buf, uint8_t with);
+extern void print_msg(const char *tag, const char *tpc, const char *buf, uint8_t with);
 extern int parser_json_str(const char *st, void *lcd, uint8_t *au, char *str_md5, uint8_t *rst, void *adr_dev);
 
 extern void print_radio_file();

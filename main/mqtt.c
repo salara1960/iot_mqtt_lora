@@ -253,26 +253,26 @@ int read_rec_log(char *, uint32_t *);
 
 //******************************************************************************************************************
 
-void print_msg(const char *tag, char *tpc, char *buf, uint8_t with)
+void print_msg(const char *tag, const char *tpc, const char *buf, uint8_t with)
 {
     if (!tag || !buf) return;
+
     int len = strlen(tag) + strlen(buf) + 48;
-    if (tpc != NULL) len += strlen(tpc);
+    if (tpc) len += strlen(tpc);
     char *st = (char *)calloc(1, len);
     if (st) {
 	if (with) {
 		struct tm *ctimka;
-		int i_day, i_mon, i_hour, i_min, i_sec;//, i_year;
 		time_t it_ct = time(NULL);
 		ctimka = localtime(&it_ct);
-		i_day = ctimka->tm_mday;	i_mon = ctimka->tm_mon+1;	//i_year = ctimka->tm_year+1900;
-		i_hour = ctimka->tm_hour;	i_min = ctimka->tm_min;	i_sec = ctimka->tm_sec;
-		sprintf(st,"%02d.%02d %02d:%02d:%02d | ",i_day, i_mon, i_hour, i_min, i_sec);
+		sprintf(st, "%02d.%02d %02d:%02d:%02d | ",
+			ctimka->tm_mday, ctimka->tm_mon + 1,
+			ctimka->tm_hour, ctimka->tm_min, ctimka->tm_sec);
 	}
-	sprintf(st+strlen(st),"%s", tag);
-	if (tpc != NULL) sprintf(st+strlen(st)," topic '%s'", tpc);
-	sprintf(st+strlen(st)," : %s", buf);
-	if (st[strlen(st)-1] != '\n') sprintf(st+strlen(st),"\n");
+	sprintf(st+strlen(st), "%s", tag);
+	if (tpc != NULL) sprintf(st+strlen(st), " topic '%s'", tpc);
+	sprintf(st+strlen(st), " : %s", buf);
+	if (st[strlen(st) - 1] != '\n') sprintf(st+strlen(st), "\n");
 	printf(st);
 	free(st);
     }
@@ -332,68 +332,67 @@ wifi_mode_t mode;
 		case SYSTEM_EVENT_STA_CONNECTED:
 		{
 #ifdef SET_WPS
-
-			if (set_wps_mode) {
-				ets_printf("[%s] SYSTEM_EVENT_STA_CONNECT to %.*s\n", TAGW, event->event_info.connected.ssid_len, event->event_info.connected.ssid);
-				//   SSID
-				if (strncmp((const char *)work_ssid, (const char *)event->event_info.connected.ssid, event->event_info.connected.ssid_len)) {
-					memset(work_ssid, 0, wifi_param_len);
-					memcpy(work_ssid, event->event_info.connected.ssid, event->event_info.connected.ssid_len);
-					//save_param(PARAM_SSID_NAME, (void *)work_ssid, wifi_param_len);
-				}
+		    if (set_wps_mode) {
+			ets_printf("[%s] SYSTEM_EVENT_STA_CONNECT to %.*s\n", TAGW, event->event_info.connected.ssid_len, event->event_info.connected.ssid);
+			//   SSID
+			if (strncmp((const char *)work_ssid, (const char *)event->event_info.connected.ssid, event->event_info.connected.ssid_len)) {
+			    memset(work_ssid, 0, wifi_param_len);
+			    memcpy(work_ssid, event->event_info.connected.ssid, event->event_info.connected.ssid_len);
+			    //save_param(PARAM_SSID_NAME, (void *)work_ssid, wifi_param_len);
 			}
+		    }
 #endif
-			wifi_ap_record_t wd;
-			if (!esp_wifi_sta_get_ap_info(&wd)) {
-			    ets_printf("%s[%s] Connected to AP '%s' auth(%u):'%s' chan:%u rssi:%d%s\n", GREEN_COLOR, TAG,
-					(char *)wd.ssid,
-					(uint8_t)wd.authmode, wifi_auth_type(wd.authmode),
-					wd.primary, wd.rssi, STOP_COLOR);
-			}
+		    wifi_ap_record_t wd;
+		    if (!esp_wifi_sta_get_ap_info(&wd)) {
+			ets_printf("%s[%s] Connected to AP '%s' auth(%u):'%s' chan:%u rssi:%d%s\n", GREEN_COLOR, TAG,
+			    	(char *)wd.ssid,
+			    	(uint8_t)wd.authmode, wifi_auth_type(wd.authmode),
+			    	wd.primary, wd.rssi, STOP_COLOR);
+		    }
 		}
 		break;
 		case SYSTEM_EVENT_STA_DISCONNECTED:
-			esp_wifi_connect();
-			xEventGroupClearBits(wifi_event_group, CONNECTED_BIT);
+		    esp_wifi_connect();
+		    xEventGroupClearBits(wifi_event_group, CONNECTED_BIT);
 		break;
 		case SYSTEM_EVENT_AP_START:
-			esp_wifi_get_mode(&mode);
+		    esp_wifi_get_mode(&mode);
 		break;
 //-----------------------------------------------------------------------
 		case SYSTEM_EVENT_AP_STACONNECTED:
-			ets_printf("[%s] station:"MACSTR" join, AID=%d\n", TAG,
-					MAC2STR(event->event_info.sta_connected.mac),
-					event->event_info.sta_connected.aid);
-			xEventGroupSetBits(wifi_event_group, CONNECTED_BIT);
+		    ets_printf("[%s] station:"MACSTR" join, AID=%d\n", TAG,
+		    		MAC2STR(event->event_info.sta_connected.mac),
+		    		event->event_info.sta_connected.aid);
+		    xEventGroupSetBits(wifi_event_group, CONNECTED_BIT);
 		break;
 		case SYSTEM_EVENT_AP_STADISCONNECTED:
-			ets_printf("[%s] station:"MACSTR" leave, AID=%d\n", TAG,
-					MAC2STR(event->event_info.sta_disconnected.mac),
-					event->event_info.sta_disconnected.aid);
-			xEventGroupClearBits(wifi_event_group, CONNECTED_BIT);
+		    ets_printf("[%s] station:"MACSTR" leave, AID=%d\n", TAG,
+		    		MAC2STR(event->event_info.sta_disconnected.mac),
+		    		event->event_info.sta_disconnected.aid);
+		    xEventGroupClearBits(wifi_event_group, CONNECTED_BIT);
 		break;
 //-----------------------------------------------------------------------
 #ifdef SET_WPS
 		case SYSTEM_EVENT_STA_WPS_ER_SUCCESS:
-			ets_printf("[%s] SYSTEM_EVENT_STA_WPS_ER_SUCCESS\n", TAGW);
-			esp_wifi_wps_disable();
-			esp_wifi_connect();
+		    ets_printf("[%s] SYSTEM_EVENT_STA_WPS_ER_SUCCESS\n", TAGW);
+		    esp_wifi_wps_disable();
+		    esp_wifi_connect();
 		break;
 		case SYSTEM_EVENT_STA_WPS_ER_FAILED:
-			ets_printf("[%s] SYSTEM_EVENT_STA_WPS_ER_FAILED\n", TAGW);
-			esp_wifi_wps_disable();
-			esp_wifi_wps_enable(WPS_TEST_MODE);
-			esp_wifi_wps_start(0);
+		    ets_printf("[%s] SYSTEM_EVENT_STA_WPS_ER_FAILED\n", TAGW);
+		    esp_wifi_wps_disable();
+		    esp_wifi_wps_enable(WPS_TEST_MODE);
+		    esp_wifi_wps_start(0);
 		break;
 		case SYSTEM_EVENT_STA_WPS_ER_TIMEOUT:
-			ets_printf("[%s] SYSTEM_EVENT_STA_WPS_ER_TIMEOUT\n", TAGW);
-			esp_wifi_wps_disable();
-			esp_wifi_wps_enable(WPS_TEST_MODE);
-			esp_wifi_wps_start(0);
+		    ets_printf("[%s] SYSTEM_EVENT_STA_WPS_ER_TIMEOUT\n", TAGW);
+		    esp_wifi_wps_disable();
+		    esp_wifi_wps_enable(WPS_TEST_MODE);
+		    esp_wifi_wps_start(0);
 		break;
 		case SYSTEM_EVENT_STA_WPS_ER_PIN:
-			ets_printf("[%s] SYSTEM_EVENT_STA_WPS_ER_PIN\n", TAGW);
-			ets_printf("[%s] WPS_PIN = "PINSTR"\n", TAGW, PIN2STR(event->event_info.sta_er_pin.pin_code));
+		    ets_printf("[%s] SYSTEM_EVENT_STA_WPS_ER_PIN\n", TAGW);
+		    ets_printf("[%s] WPS_PIN = "PINSTR"\n", TAGW, PIN2STR(event->event_info.sta_er_pin.pin_code));
 		break;
 #endif
 		default : break;
@@ -409,9 +408,9 @@ char *get_json_str(cJSON *tp)
     char *st = cJSON_Print(tp);
     if (st) {
 	if (*st == '"') {
-		int len = strlen(st);
-		memcpy(st, st + 1, len - 1);
-		*(st + len - 2) = '\0';
+	    int len = strlen(st);
+	    memcpy(st, st + 1, len - 1);
+	    *(st + len - 2) = '\0';
 	}
     }
 
@@ -425,13 +424,13 @@ s_radio *ret=NULL;
     if (a == NULL) {//for broker
 	cJSON *tmp = cJSON_GetObjectItem(ob, devID);
 	if (tmp) {
-		if (tmp->type == cJSON_String) {
-		    char *vals = get_json_str(tmp);
-		    if (vals) {
-			ret = find_radio(strtoul(vals, NULL, 16));
-			free(vals);
-		    }
+	    if (tmp->type == cJSON_String) {
+		char *vals = get_json_str(tmp);
+		if (vals) {
+		    ret = find_radio(strtoul(vals, NULL, 16));
+		    free(vals);
 		}
+	    }
 	}
     } else ret = find_radio(cli_id);//for tls_client
 
@@ -446,9 +445,6 @@ int k, i, val_bin = -1;
 s_radio *dev = NULL;//NULL - unknown device, else addr device in list
 s_led_cmd *lcmd = (s_led_cmd *)lcd;
 
-
-	//char stx[128]; sprintf(stx," st='%s' md5='%s'\n", st, str_md5); print_msg(__func__, NULL, stx, 1);
-	//ESP_LOGI(__func__, " st='%s' md5='%s'\n", st, str_md5);
 
 	cJSON *obj = cJSON_Parse(st);
 	if (obj) {
@@ -664,7 +660,6 @@ s_led_cmd *lcmd = (s_led_cmd *)lcd;
 				if (au) if (*au == 0) yes=-1;
 			    break;
 			    case 9://auth
-//				sprintf(stx,"auth: val='%s' md5='%s'\n", val, str_md5); print_msg(__func__, NULL, stx, 1);
 				if ((au) && (str_md5) && (val)) {
 				    if (!strcmp(val, str_md5)) {
 					done = 1; yes = 9;
@@ -1210,8 +1205,6 @@ s_led_cmd *lcmd = (s_led_cmd *)lcd;
 	last_cmd = ind_c;
 	if (adr_dev) *(uint32_t *)adr_dev = (uint32_t)dev;
 
-    //ESP_LOGI(TAG, "parser_json_str return 0x%x", yes);
-
     return yes;
 }
 //--------------------------------------------------------------------------------------------------
@@ -1471,7 +1464,6 @@ uint32_t adr;
 s_radio *zap = NULL;
 s_radio_cmd rec;
 
-    //ESP_LOGW(TAG_GET, "[%.*s] %.*s", topicNameLen, topicName, params->payloadLen, (char *)params->payload);
 
     char *ukd = (char *)calloc(1, params->payloadLen + 1);
     char *ukt = (char *)calloc(1, topicNameLen + 1);
@@ -2631,19 +2623,6 @@ rgbVal *pixels = NULL;
 				vTaskDelay(25 / portTICK_RATE_MS);
 			}
 		break;
-/*
-		case 2://rainbow, line, white - off
-			algo=0;//none
-			memset((uint8_t *)&cdata, 0, size_led_cmd);
-			cdata.size = size; //cdata->mode = 0;
-			if (xQueueSend(led_cmd_queue, (void *)&cdata, (TickType_t)0) != pdTRUE) {
-			    #ifdef SET_ERROR_PRINT
-				ESP_LOGE(TAGL, "Error while sending to led_cmd_queue.");
-			    #endif
-			}
-			//vTaskDelay(25 / portTICK_RATE_MS);
-		break;
-*/
 		case 3: case 4: case 5: case 6://line up, line down, white up, white down
 			if (pixels) {
 				for (uint8_t i = 0; i < size; i++) {
@@ -3346,17 +3325,19 @@ wmode = WIFI_MODE_STA; save_param(PARAM_WMODE_NAME, (void *)&wmode, sizeof(uint8
 		#endif
 	    #endif
 	    ssd1306_text_xy(stk, 2, 1);
-	//    if (!shift) {
-	//	shift = ~shift;
-	//	ssd1306_shift(true, 2);
-	//    }
+/*
+	    if (!shift) {
+		shift = ~shift;
+		ssd1306_shift(true, 2);
+	    }
 
-	    //ssd1306_contrast(contrast);
-	    //contrast = ~contrast;
-	    //ssd1306_scroll(scroll);
-	    //scroll = ~scroll;
-//	    ssd1306_text(stk);
-//	    ssd1306_text_xy("ESP32", 4, 2);
+	    ssd1306_contrast(contrast);
+	    contrast = ~contrast;
+	    ssd1306_scroll(scroll);
+	    scroll = ~scroll;
+	    ssd1306_text(stk);
+	    ssd1306_text_xy("ESP32", 4, 2);
+*/
 	}
 	adc_tw = get_tmr(1000);
     }

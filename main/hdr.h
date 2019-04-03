@@ -9,7 +9,7 @@
 #undef SET_OTA
 #define SET_ERROR_PRINT
 #undef SET_WEB
-#define SET_WS
+#undef SET_WS
 #define SET_SSD1306
 #undef SET_SERIAL
 

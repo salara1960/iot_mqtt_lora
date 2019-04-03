@@ -6,7 +6,8 @@
 #ifdef SET_SNTP
     #include <time.h>
     #include <sys/time.h>
-    #include "apps/sntp/sntp.h"
+//    #include "apps/sntp/sntp.h"
+    #include "lwip/apps/sntp.h"
 
     extern const char *TAGS;
     extern uint8_t sntp_start;

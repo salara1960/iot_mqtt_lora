@@ -351,51 +351,7 @@ uint8_t byte;
     i2c_cmd_link_delete(cmd);
 }
 //-----------------------------------------------------------------------------------------
-/*
-void ssd1306_text(char *stroka)
-{
-    if (!stroka) return;
-
-uint8_t i, cur_page = 0, len = strlen(stroka);
-i2c_cmd_handle_t cmd;
-
-    cmd = i2c_cmd_link_create();
-    i2c_master_start(cmd);
-    i2c_master_write_byte(cmd, (OLED_I2C_ADDRESS << 1) | I2C_MASTER_WRITE, true);
-
-    i2c_master_write_byte(cmd, OLED_CONTROL_BYTE_CMD_STREAM, true);
-    i2c_master_write_byte(cmd, 0x00, true); // reset column
-    i2c_master_write_byte(cmd, 0x10, true);
-    i2c_master_write_byte(cmd, 0xB0 | cur_page, true); // reset page
-
-    i2c_master_stop(cmd);
-    i2c_master_cmd_begin(SSD1306_PORT, cmd, 10/portTICK_PERIOD_MS);
-    i2c_cmd_link_delete(cmd);
-
-    for (i = 0; i < len; i++) {
-	cmd = i2c_cmd_link_create();
-	i2c_master_start(cmd);
-
-	i2c_master_write_byte(cmd, (OLED_I2C_ADDRESS << 1) | I2C_MASTER_WRITE, true);
-	if (stroka[i] == '\n') {
-	    i2c_master_write_byte(cmd, OLED_CONTROL_BYTE_CMD_STREAM, true);
-	    i2c_master_write_byte(cmd, 0x00, true); // reset column
-	    i2c_master_write_byte(cmd, 0x10, true);
-	    i2c_master_write_byte(cmd, 0xB0 | ++cur_page, true); // increment page
-	} else {
-	    i2c_master_write_byte(cmd, OLED_CONTROL_BYTE_DATA_STREAM, true);
-	    i2c_master_write(cmd, font8x8[(uint8_t)stroka[i]], 8, true);
-	}
-
-	i2c_master_stop(cmd);
-	i2c_master_cmd_begin(SSD1306_PORT, cmd, 10/portTICK_PERIOD_MS);
-	i2c_cmd_link_delete(cmd);
-    }
-
-}
-*/
-//-----------------------------------------------------------------------------------------
-void ssd1306_text_xy(char *stroka, uint8_t cx, uint8_t cy)
+void ssd1306_text_xy(const char *stroka, uint8_t cx, uint8_t cy)
 {
 
 uint8_t i, lin = cy - 1, col = cx - 1, len = strlen(stroka);
@@ -440,12 +396,12 @@ i2c_cmd_handle_t cmd;
 
 }
 //-----------------------------------------------------------------------------------------
-void ssd1306_text(char *stroka)
+void ssd1306_text(const char *stroka)
 {
     ssd1306_text_xy(stroka, 1, 1);
 }
 //-----------------------------------------------------------------------------------------
-uint8_t calcx(int len)
+uint8_t ssd1306_calcx(int len)
 {
 uint8_t ret = 0;
 
